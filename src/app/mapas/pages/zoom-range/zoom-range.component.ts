@@ -1,54 +1,66 @@
-import { AfterViewInit, Component, ElementRef, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, OnDestroy, ViewChild } from '@angular/core';
 import * as mapboxgl from 'mapbox-gl';
 
 @Component({
   selector: 'app-zoom-range',
   templateUrl: './zoom-range.component.html',
-  styles: [
-    `
-      .mapa-container {
-        height: 100%;
-        width: 100%;
-      }
-
-      .row {
-        background-color: white;
-        bottom: 50px;
-        left: 50px;
-        padding: 10px;
-        border-radius: 5px;
-        position: fixed;
-        z-index: 999;
-      }
-    `,
-  ],
+  styleUrls: ['./zoom-range.css'],
 })
-export class ZoomRangeComponent implements AfterViewInit {
-
+export class ZoomRangeComponent implements AfterViewInit, OnDestroy {
   mapa!: mapboxgl.Map;
   @ViewChild('mapa') divMapa!: ElementRef; //trabajar con el viweChild permite tener multiples instancias de los mapas y que no dependan del id.
   nivelZoom: number = 10;
 
-  constructor() {
-  }
+  //centro del mapa
+  center: [number, number] = [-73.35526071904046, 5.557286474176473];
+
+  constructor() {}
 
   ngAfterViewInit(): void {
     //Se hace en este método porque es cuando divMapa tiene valor
     this.mapa = new mapboxgl.Map({
       container: this.divMapa.nativeElement,
       style: 'mapbox://styles/mapbox/streets-v11',
-      center: [-73.35526071904046, 5.557286474176473],
+      center: this.center,
       zoom: this.nivelZoom,
     });
+
+    //listener para cuando hay cambios en el mapa
+    this.mapa.on('zoom', (ev) => {
+      this.nivelZoom = this.mapa.getZoom();
+    });
+
+    //restringir el zoom
+    this.mapa.on('zoomend', (ev) => {
+      if (this.mapa.getZoom() > 18) {
+        this.mapa.zoomTo(18);
+      }
+    });
+
+    //listener para las coordenadas cuando se mueve el mapa
+    this.mapa.on('move', ( ev ) => {
+      const target = ev.target;
+      const { lng, lat } = target.getCenter();
+      this.center = [ lng, lat ];
+    });
+  }
+
+  ngOnDestroy(): void {
+    //Destruir los listener cuando se destruye el componente
+    this.mapa.off('zoom',  () => {});
+    this.mapa.off('zoomend',  () => {});
+    this.mapa.off('move',  () => {});
   }
 
   zoomIn() {
     this.mapa.zoomIn();
-    this.nivelZoom = this.mapa.getZoom();
   }
 
   zoomOut() {
     this.mapa.zoomOut();
-    this.nivelZoom = this.mapa.getZoom();
+  }
+
+  zoomCambio ( value: string ) {
+    this.mapa.zoomTo( +value );
   }
 }
