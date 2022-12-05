@@ -1,5 +1,9 @@
 # MapasApp
 
+Este proyecto está siendo desarrollado siguiendo el curso de Angular de Fernando Herrera. En el se está haciendo uso de la librería mapbox.
+La idea es aprender sobre el manejo de mapas y las propiedades con que estos cuentan (zoom, lng, lat), los diferentes listeners y así como también
+el manejo de marcadores. 
+
 This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 13.0.3.
 
 ## Development server
